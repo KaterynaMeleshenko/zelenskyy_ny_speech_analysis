@@ -3,6 +3,7 @@ import pandas as pd
 from collections import Counter
 import re
 import matplotlib.pyplot as plt
+from collections import defaultdict
 # from os import path
 # from PIL import Image
 # from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
@@ -89,5 +90,29 @@ data = list()
 for path in file_paths:
     data.append(count_common_words(path, 15))
 
-draw_multiple_plots(data)
+# draw_multiple_plots(data)
 
+def count_common_words_2(file_path, words_num = words_num):
+    """
+    Count the most common words in text.
+
+    Keyword argument:
+    file_path -- file's path in list format
+    words_num -- number of common words in the result in int format (default words_num)
+    """
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+
+    words = re.findall(r'\b(?![0-9]+\b)\w+\b', text.lower())
+    word_frequencies = defaultdict(int)
+    # Count word frequencies while considering different cases as the same word
+    for word in words:
+        word_frequencies[word] += 1
+
+    # Print the word frequencies
+    for word, frequency in word_frequencies.items():
+        print(f"{word}: {frequency}")
+
+
+count_common_words_2('speech/NY_2022.txt')
