@@ -4,6 +4,7 @@ from collections import Counter
 import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import pymorphy2
 # from os import path
 # from PIL import Image
 # from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
@@ -104,15 +105,27 @@ def count_common_words_2(file_path, words_num = words_num):
     with open(file_path, 'r', encoding='utf-8') as file:
         text = file.read()
 
-    words = re.findall(r'\b(?![0-9]+\b)\w+\b', text.lower())
+    words = re.findall(r'\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b', text.lower())
+    num_all_words = len(words)
+
+    filtered_words = [word for word in words if word not in stop_words_list]
+    num_filtered_words = len(filtered_words)
+
+    morph = pymorphy2.MorphAnalyzer(lang='uk')
+
     word_frequencies = defaultdict(int)
-    # Count word frequencies while considering different cases as the same word
-    for word in words:
-        word_frequencies[word] += 1
 
-    # Print the word frequencies
+    #TO DO: list of lemma words
+
+    for word in filtered_words:
+        parsed = morph.parse(word)[0]
+        lemma = parsed.normal_form
+        word_frequencies[lemma] += 1
+
+    dictionary = []
     for word, frequency in word_frequencies.items():
-        print(f"{word}: {frequency}")
+        dictionary.append([word, frequency])
 
+    return sorted(dictionary)
 
-count_common_words_2('speech/NY_2022.txt')
+print(count_common_words_2('speech/NY_2021.txt'))
