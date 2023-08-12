@@ -144,9 +144,9 @@ word_counts = {'word': [], '2020': [], '2021': [], '2022': [], '2023': []}
 for word in all_words:
     word_counts['word'].append(word)
     for year, words in year_sets.items():
-        word_counts[str(year)].append(int(word in words))
+        word_counts[str(year)].append(list(words).count(word))
 
 # Create a DataFrame from the word_counts dictionary
 df = pd.DataFrame(word_counts)
 
-print(df)
+print(df.head(20))
