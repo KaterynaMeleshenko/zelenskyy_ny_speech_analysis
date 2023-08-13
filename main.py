@@ -10,14 +10,25 @@ import pymorphy2
 # from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
 
-file_path_stop_words = "stopwords_ua.txt"
-with open(file_path_stop_words, 'r', encoding='utf-8') as file:
-    stop_words = file.read()
-
-stop_words_list = re.findall(r'\b\w+\b', stop_words.lower())
-
+speech_regex = r'\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b'
+stop_words_regex = r'\b\w+\b'
 years = [2020, 2021, 2022, 2023]
 
+def get_speech_path(year):
+    file_path = f'speech/NY_{year}.txt'
+    return file_path
+
+def get_text(path):
+    with open(path, 'r', encoding='utf-8') as file:
+        text = file.read()
+    return text
+
+def get_words(text, regex)
+    words = re.findall(regex, text.lower())
+    return words
+
+stop_words_path = get_text('stopwords_ua.txt')
+stop_words_list = get_words(stop_words_path, stop_words_regex)
 # words_num = 15
 
 # def count_common_words(file_path, words_num = words_num):
@@ -93,6 +104,8 @@ years = [2020, 2021, 2022, 2023]
 
 # draw_multiple_plots(data)
 
+
+
 def do_lemma(year):
     """
     Count the most common words in text.
@@ -124,14 +137,6 @@ year_sets = {}
 
 for year in years:
     year_sets.update(do_lemma(year))
-
-
-# year_sets = {
-#     2020: count_common_words_2('speech/NY_2020.txt'),
-#     2021: count_common_words_2('speech/NY_2021.txt'),
-#     2022: count_common_words_2('speech/NY_2022.txt'),
-#     2023: count_common_words_2('speech/NY_2023.txt')
-# }
 
 all_words = set()
 for words in year_sets.values():
