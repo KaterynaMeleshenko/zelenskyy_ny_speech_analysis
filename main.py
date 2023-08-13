@@ -76,7 +76,7 @@ def get_speech_words(year):
     Get the dictionary with year as key and lemma words as value.
 
     Keyword argument:
-    year -- words to be executed lemmatization
+    year -- year of speech to get the dictionary from
     """
     speech_path = get_speech_path(year)
     text = get_text(speech_path)
@@ -86,11 +86,86 @@ def get_speech_words(year):
 
     return {year : lemma_words}
 
+def get_year_sets(years):
+    """
+    Get the dictionary with years as keys and lemma words as values.
+
+    Keyword argument:
+    years -- years of speeches to get the dictionary from
+    """
+    year_sets = dict()
+
+    for year in years:
+        year_sets.update(get_speech_words(year))
+
+    return year_sets
+
+
+def get_all_words(years):
+    """
+    Get the set of all words for all years.
+
+    Keyword argument:
+    years -- years of speeches to get the all words from
+    """
+    year_sets = get_year_sets(years)
+    all_words = set()
+
+    for words in year_sets.values():
+        all_words.update(words)
+    
+    return all_words
+
+
+def get_data(years):
+    """
+    Get the dictionary with column name as key and lemma words as value.
+
+    Keyword argument:
+    years -- years of speeches to get the dictionary from
+    """
+    all_words = get_all_words(years)
+    year_sets = get_year_sets(years)
+   
+    # Create a dictionary to hold the counts
+    word_counts = {'word': [], '2020': [], '2021': [], '2022': [], '2023': []}
+
+    # Populate the word_counts dictionary with counts
+    for word in all_words:
+        word_counts['word'].append(word)
+        for year, words in year_sets.items():
+            word_counts[str(year)].append(list(words).count(word))
+
+    return word_counts
+
+def get_df(data):
+    """
+    Convert data to DataFrame.
+
+    Keyword argument:
+    data -- data to be converted
+    """
+    df = pd.DataFrame(data)
+
+    return df
+
+data = get_data(years)
+df = get_df(data)
+
+def save_df_to_csv(df):
+    """
+    Save dataframe to .csv file.
+
+    Keyword argument:
+    df -- dataframe to be saved
+    """
+    df.to_csv('speeches_df.csv', index=False)
 
 
 
 
-# words_num = 15
+
+
 
 
 
@@ -146,55 +221,3 @@ def get_speech_words(year):
 #     data.append(count_common_words(path, 15))
 
 # draw_multiple_plots(data)
-
-
-
-def do_lemma(year):
-    """
-    Count the most common words in text.
-
-    Keyword argument:
-    file_path -- file's path in list format
-    """
-    file_path = f'speech/NY_{year}.txt'
-    with open(file_path, 'r', encoding='utf-8') as file:
-        text = file.read()
-
-    words = re.findall(r'\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b', text.lower())
-    num_all_words = len(words)
-
-    filtered_words = [word for word in words if word not in stop_words_list]
-    num_filtered_words = len(filtered_words)
-
-    morph = pymorphy2.MorphAnalyzer(lang='uk')
-    lemma_words = set([morph.parse(word)[0].normal_form for word in filtered_words])
-
-    return {year : lemma_words}
-
-
-# all_words = set()
-
-# for text in file_paths:
-#     all_words.update(count_common_words_2(text))
-year_sets = {}
-
-for year in years:
-    year_sets.update(do_lemma(year))
-
-all_words = set()
-for words in year_sets.values():
-    all_words.update(words)
-
-# Create a dictionary to hold the counts
-word_counts = {'word': [], '2020': [], '2021': [], '2022': [], '2023': []}
-
-# Populate the word_counts dictionary with counts
-for word in all_words:
-    word_counts['word'].append(word)
-    for year, words in year_sets.items():
-        word_counts[str(year)].append(list(words).count(word))
-
-# Create a DataFrame from the word_counts dictionary
-df = pd.DataFrame(word_counts)
-
-print(df.head(20))
