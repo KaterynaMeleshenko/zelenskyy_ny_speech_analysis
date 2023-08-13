@@ -5,10 +5,6 @@ import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import pymorphy2
-# from os import path
-# from PIL import Image
-# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-
 
 speech_regex = r'\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b'
 stop_words_regex = r'\b\w+\b'
@@ -22,6 +18,7 @@ def get_speech_path(year):
     year -- year of the speech, int
     """
     file_path = f'speech/NY_{year}.txt'
+
     return file_path
 
 def get_text(path):
@@ -33,6 +30,7 @@ def get_text(path):
     """
     with open(path, 'r', encoding='utf-8') as file:
         text = file.read()
+
     return text
 
 def get_words(text, regex):
@@ -44,33 +42,57 @@ def get_words(text, regex):
     regex -- the reges to split the text by
     """
     words = re.findall(regex, text.lower())
+
     return words
 
 stop_words_path = get_text('stopwords_ua.txt')
 stop_words_list = get_words(stop_words_path, stop_words_regex)
 
+def get_filtered_words(words):
+    """
+    Get the list of filtered words.
+
+    Keyword argument:
+    words -- words to be filtered
+    """
+    filtered_words = [word for word in words if word not in stop_words_list]
+
+    return filtered_words
+
+def get_lemma_words(filtered_words):
+    """
+    Get the list of words after lemmatization.
+
+    Keyword argument:
+    words -- words to be executed lemmatization
+    """
+    morph = pymorphy2.MorphAnalyzer(lang='uk')
+    lemma_words = set([morph.parse(word)[0].normal_form for word in filtered_words])
+
+    return lemma_words
+
+def get_speech_words(year):
+    """
+    Get the dictionary with year as key and lemma words as value.
+
+    Keyword argument:
+    year -- words to be executed lemmatization
+    """
+    speech_path = get_speech_path(year)
+    text = get_text(speech_path)
+    words = get_words(text, speech_regex)
+    filtered_words = get_filtered_words(words)
+    lemma_words = get_lemma_words(filtered_words)
+
+    return {year : lemma_words}
+
+
+
+
 
 # words_num = 15
 
-# def count_common_words(file_path, words_num = words_num):
-#     """
-#     Count the most common words in text.
 
-#     Keyword argument:
-#     file_path -- file's path in list format
-#     words_num -- number of common words in the result in int format (default words_num)
-#     """
-
-#     with open(file_path, 'r', encoding='utf-8') as file:
-#         text = file.read()
-
-#     words = re.findall(r'\b(?![0-9]+\b)\w+\b', text.lower())
-#     filtered_words = [word for word in words if word not in stop_words_list]
-#     word_counts = Counter(filtered_words)
-#     most_common_words = word_counts.most_common(words_num)
-#     year = re.sub(r'\D', '', file_path)
-
-#     return [year,  most_common_words]
 
 # def draw_plot(data_point):
 #     """
