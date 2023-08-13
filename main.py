@@ -15,20 +15,41 @@ stop_words_regex = r'\b\w+\b'
 years = [2020, 2021, 2022, 2023]
 
 def get_speech_path(year):
+    """
+    Create speech path.
+
+    Keyword argument:
+    year -- year of the speech, int
+    """
     file_path = f'speech/NY_{year}.txt'
     return file_path
 
 def get_text(path):
+    """
+    Get the text from the path.
+
+    Keyword argument:
+    path -- path of the text, str
+    """
     with open(path, 'r', encoding='utf-8') as file:
         text = file.read()
     return text
 
-def get_words(text, regex)
+def get_words(text, regex):
+    """
+    Get the list of the words.
+
+    Keyword argument:
+    text -- the text to split to the words, str
+    regex -- the reges to split the text by
+    """
     words = re.findall(regex, text.lower())
     return words
 
 stop_words_path = get_text('stopwords_ua.txt')
 stop_words_list = get_words(stop_words_path, stop_words_regex)
+
+
 # words_num = 15
 
 # def count_common_words(file_path, words_num = words_num):
