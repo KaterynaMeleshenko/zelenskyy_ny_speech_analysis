@@ -67,7 +67,7 @@ def get_lemma_words(filtered_words):
     words -- words to be executed lemmatization
     """
     morph = pymorphy2.MorphAnalyzer(lang='uk')
-    lemma_words = set([morph.parse(word)[0].normal_form for word in filtered_words])
+    lemma_words = [morph.parse(word)[0].normal_form for word in filtered_words]
 
     return lemma_words
 
@@ -161,9 +161,14 @@ def save_df_to_csv(df):
     """
     df.to_csv('speeches_df.csv', index=False)
 
+# save_df_to_csv(df)
+df.set_index('word', inplace=True)
 
 
-
+df.loc['батьки'] += df.loc['батьків']
+df = df.drop('батьків')
+df.loc['українець'] += df.loc['українка']
+df = df.drop('українка')
 
 
 
