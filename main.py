@@ -176,60 +176,6 @@ def save_df_to_csv(df):
     df.to_csv("speeches_df.csv", index=False)
 
 
-# def draw_plot(data_point):
-#     """
-#     Draw plot of the most common words.
-
-#     Keyword argument:
-#     text -- list of tulpes, where 1st value is a word and 2nd value is frequencies
-#     """
-
-#     words = [word for word, _ in data_point[1]]
-#     frequencies = [freq for _, freq in data_point[1]]
-#     max_freq = max(frequencies)
-
-#     plt.figure(figsize=(words_num, max_freq))
-#     plt.bar(words, frequencies, color='blue')
-#     plt.xlabel('Words')
-#     plt.ylabel('Frequencies')
-#     plt.title('Most Common Words and Their Frequencies')
-#     plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels for better visibility
-#     plt.tight_layout()
-
-#     plt.show()
-
-# def draw_multiple_plots(data):
-
-#     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-#     plots_list = [ax1, ax2, ax3, ax4]
-
-#     for plot in plots_list:
-#         index = plots_list.index(plot)
-#         words = [word for word, _ in data[index][1]]
-#         frequencies = [freq for _, freq in data[index][1]]
-#         max_freq = max(frequencies)
-#         plot.bar(words,frequencies)
-#         plot.set_title(data[index][0])
-#         # plot.set_xlabel("Words")
-#         # plot.set_ylabel("Frequencies ")
-
-#         # Rotate x-axis labels for each plot
-#         plot.set_xticklabels(words, rotation=45, ha='right')
-
-#     # Adjust the spacing between subplots
-#     plt.subplots_adjust(left=0.125, right=0.9, bottom=0.1, top=0.9, hspace=0.4)
-
-#     # Show the plot
-#     plt.show()
-
-
-# data = list()
-# for path in file_paths:
-#     data.append(count_common_words(path, 15))
-
-# draw_multiple_plots(data)
-
-
 def get_dict_content(word):
     """
     Get from the dictionary article of the world
@@ -243,9 +189,6 @@ def get_dict_content(word):
     return soup
 
 
-all_words = df.index.tolist()
-
-
 def get_typo(words):
     typo_words = []
     target_text = "не знайдено"
@@ -257,34 +200,55 @@ def get_typo(words):
     return typo_words
 
 
-print(get_typo(all_words))
-
 # Lemmatization corrections
-# df.loc["батьки"] += df.loc["батьків"]
-# df = df.drop("батьків", axis=0)
-# df.loc["українець"] += df.loc["українка"]
-# df = df.drop("українка", axis=0)
-# df.loc["війна"] += df.loc["війнути"]
-# df = df.drop("війнути", axis=0)
-# df.loc["день"] += df.loc["дніти"]
-# df = df.drop("дніти", axis=0)
-# df.loc["друг"] += df.loc["друзі"] + df.loc["друзь"]
-# df = df.drop(["друзі", "друзь"], axis=0)
-# df.loc["з’явитися"] += df.loc["з'явитися"]
-# df = df.drop("з'явитися", axis=0)
-# df.loc["здоровий"] += df.loc["здор"]
-# df = df.drop("здор", axis=0)
+index_names = [
+    ("батьки", "батьків"),
+    ("українець", "українка"),
+    ("війна", "війнути"),
+    ("день", "дніти"),
+    ("друг", "друзі", "друзь"),
+    ("з’явитися", "з'явитися"),
+    ("здоровий", "здор"),
+    ("казати", "кажуть"),
+    ("рік", "річ", "рок"),
+    ("харків", "харко"),
+    ("пам'ятати", "пам’ятато"),
+    ("київ", "кий"),
+]
 
-# new_indexes = {
-#     "б’ватися": "вбивати",
-#     "братів": "брат",
-#     "бтерти": "бтр",
-#     "вбивець": "вбивця",
-#     "гру": "гра",
-#     "дідусів": "дідусь",
-#     "зникний": "зникати",
-# }
-# df = df.rename(new_indexes, axis="index")
+for main_index, *to_merge in index_names:
+    df.loc[main_index] += df.loc[to_merge].sum()
+    df = df.drop(to_merge, axis=0)
+
+df.loc["івано-франківськ"] = df.loc["івано"] + df.loc["франківськ"]
 
 
-# save_df_to_csv(df)
+new_indexes = {
+    "б’ватися": "вбивати",
+    "братів": "брат",
+    "бтерти": "бтр",
+    "вбивець": "вбивця",
+    "гру": "гра",
+    "дідусів": "дідусь",
+    "зникний": "зникати",
+    "тюрьм": "тюрьма",
+    "лесь": "леся",
+    "шахедіва": "шахед",
+    "скорика": "скорик",
+    "черкас": "черкаси",
+    "тіна": "тінь",
+    "твіттера": "твіттер",
+    "русский": "русскій",
+    "марківий": "марків",
+    "мости": "міст",
+    "львів’ян": "львів’янин",
+    "обов’язка": "обов’язок",
+    "ковіда": "ковід",
+    "марути": "марув",
+}
+
+df = df.rename(new_indexes, axis="index")
+
+# all_words = df.index.tolist()
+# print(get_typo(all_words))
+save_df_to_csv(df)
