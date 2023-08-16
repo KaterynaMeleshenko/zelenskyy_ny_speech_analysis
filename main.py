@@ -5,10 +5,13 @@ import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import pymorphy2
+from bs4 import BeautifulSoup
+import requests
 
-speech_regex = r'\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b'
-stop_words_regex = r'\b\w+\b'
+speech_regex = r"\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b"
+stop_words_regex = r"\b\w+\b"
 years = [2020, 2021, 2022, 2023]
+
 
 def get_speech_path(year):
     """
@@ -17,9 +20,10 @@ def get_speech_path(year):
     Keyword argument:
     year -- year of the speech, int
     """
-    file_path = f'speech/NY_{year}.txt'
+    file_path = f"speech/NY_{year}.txt"
 
     return file_path
+
 
 def get_text(path):
     """
@@ -28,10 +32,11 @@ def get_text(path):
     Keyword argument:
     path -- path of the text, str
     """
-    with open(path, 'r', encoding='utf-8') as file:
+    with open(path, "r", encoding="utf-8") as file:
         text = file.read()
 
     return text
+
 
 def get_words(text, regex):
     """
@@ -45,8 +50,10 @@ def get_words(text, regex):
 
     return words
 
-stop_words_path = get_text('stopwords_ua.txt')
+
+stop_words_path = get_text("stopwords_ua.txt")
 stop_words_list = get_words(stop_words_path, stop_words_regex)
+
 
 def get_filtered_words(words):
     """
@@ -59,6 +66,7 @@ def get_filtered_words(words):
 
     return filtered_words
 
+
 def get_lemma_words(filtered_words):
     """
     Get the list of words after lemmatization.
@@ -66,10 +74,11 @@ def get_lemma_words(filtered_words):
     Keyword argument:
     words -- words to be executed lemmatization
     """
-    morph = pymorphy2.MorphAnalyzer(lang='uk')
+    morph = pymorphy2.MorphAnalyzer(lang="uk")
     lemma_words = [morph.parse(word)[0].normal_form for word in filtered_words]
 
     return lemma_words
+
 
 def get_speech_words(year):
     """
@@ -84,7 +93,8 @@ def get_speech_words(year):
     filtered_words = get_filtered_words(words)
     lemma_words = get_lemma_words(filtered_words)
 
-    return {year : lemma_words}
+    return {year: lemma_words}
+
 
 def get_year_sets(years):
     """
@@ -113,8 +123,11 @@ def get_all_words(years):
 
     for words in year_sets.values():
         all_words.update(words)
-    
+
     return all_words
+
+
+all_words = get_all_words(years)
 
 
 def get_data(years):
@@ -124,19 +137,19 @@ def get_data(years):
     Keyword argument:
     years -- years of speeches to get the dictionary from
     """
-    all_words = get_all_words(years)
     year_sets = get_year_sets(years)
-   
+
     # Create a dictionary to hold the counts
-    word_counts = {'word': [], '2020': [], '2021': [], '2022': [], '2023': []}
+    word_counts = {"word": [], "2020": [], "2021": [], "2022": [], "2023": []}
 
     # Populate the word_counts dictionary with counts
     for word in all_words:
-        word_counts['word'].append(word)
+        word_counts["word"].append(word)
         for year, words in year_sets.items():
             word_counts[str(year)].append(list(words).count(word))
 
     return word_counts
+
 
 def get_df(data):
     """
@@ -149,8 +162,10 @@ def get_df(data):
 
     return df
 
+
 data = get_data(years)
 df = get_df(data)
+
 
 def save_df_to_csv(df):
     """
@@ -159,19 +174,40 @@ def save_df_to_csv(df):
     Keyword argument:
     df -- dataframe to be saved
     """
-    df.to_csv('speeches_df.csv', index=False)
+    df.to_csv("speeches_df.csv", index=False)
+
+
+df.set_index("word", inplace=True)
+
+# Lemmatization corrections
+# df.loc["батьки"] += df.loc["батьків"]
+# df = df.drop("батьків", axis=0)
+# df.loc["українець"] += df.loc["українка"]
+# df = df.drop("українка", axis=0)
+# df.loc["війна"] += df.loc["війнути"]
+# df = df.drop("війнути", axis=0)
+# df.loc["день"] += df.loc["дніти"]
+# df = df.drop("дніти", axis=0)
+# df.loc["друг"] += df.loc["друзі"] + df.loc["друзь"]
+# df = df.drop(["друзі", "друзь"], axis=0)
+# df.loc["з’явитися"] += df.loc["з'явитися"]
+# df = df.drop("з'явитися", axis=0)
+# df.loc["здоровий"] += df.loc["здор"]
+# df = df.drop("здор", axis=0)
+
+# new_indexes = {
+#     "б’ватися": "вбивати",
+#     "братів": "брат",
+#     "бтерти": "бтр",
+#     "вбивець": "вбивця",
+#     "гру": "гра",
+#     "дідусів": "дідусь",
+#     "зникний": "зникати",
+# }
+# df = df.rename(new_indexes, axis="index")
+
 
 # save_df_to_csv(df)
-df.set_index('word', inplace=True)
-
-
-df.loc['батьки'] += df.loc['батьків']
-df = df.drop('батьків')
-df.loc['українець'] += df.loc['українка']
-df = df.drop('українка')
-
-
-
 
 
 # def draw_plot(data_point):
@@ -197,7 +233,7 @@ df = df.drop('українка')
 #     plt.show()
 
 # def draw_multiple_plots(data):
-    
+
 #     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 #     plots_list = [ax1, ax2, ax3, ax4]
 
@@ -226,3 +262,24 @@ df = df.drop('українка')
 #     data.append(count_common_words(path, 15))
 
 # draw_multiple_plots(data)
+
+
+def get_page_content(word):
+    DICT_URL = "http://sum.in.ua/?swrd="
+    req = requests.get(f"{DICT_URL}{word}")
+    soup = BeautifulSoup(req.text, "lxml")
+    return soup
+
+
+def get_typo(words):
+    typo_words = []
+    target_text = "не знайдено"
+    for word in words:
+        content = get_page_content(word)
+        if target_text in content.text:
+            typo_words.append(word)
+
+    return typo_words
+
+
+print(get_typo(all_words))
