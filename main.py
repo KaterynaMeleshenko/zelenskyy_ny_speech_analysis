@@ -8,7 +8,7 @@ import pymorphy2
 from bs4 import BeautifulSoup
 import requests
 
-speech_regex = r"\b[А-ЯІЇЄҐа-яіїєґ\'’]+\b"
+speech_regex = r"\b[А-ЯІЇЄҐа-яіїєґ\'\-’]+\b"
 stop_words_regex = r"\b\w+\b"
 years = [2020, 2021, 2022, 2023]
 
@@ -55,14 +55,29 @@ stop_words_path = get_text("stopwords_ua.txt")
 stop_words_list = get_words(stop_words_path, stop_words_regex)
 
 
-def get_filtered_words(words):
+def get_cleaned_words(words):
+    """
+    Get the list of words cleaned from dashes in the start and in the end.
+
+    Keyword argument:
+    words -- words to be filtered, list.
+    """
+    cleaned_words = [word[1:] if word.startswith("-") else word for word in words]
+    cleaned_words = [
+        word[:-1] if word.endswith("-") else word for word in cleaned_words
+    ]
+
+    return cleaned_words
+
+
+def get_filtered_words(cleaned_words):
     """
     Get the list of filtered words.
 
     Keyword argument:
     words -- words to be filtered, list.
     """
-    filtered_words = [word for word in words if word not in stop_words_list]
+    filtered_words = [word for word in cleaned_words if word not in stop_words_list]
 
     return filtered_words
 
@@ -90,7 +105,8 @@ def get_speech_words(year):
     speech_path = get_speech_path(year)
     text = get_text(speech_path)
     words = get_words(text, speech_regex)
-    filtered_words = get_filtered_words(words)
+    cleaned_words = get_cleaned_words(words)
+    filtered_words = get_filtered_words(cleaned_words)
     lemma_words = get_lemma_words(filtered_words)
 
     return {year: lemma_words}
@@ -173,7 +189,7 @@ def save_df_to_csv(df):
     Keyword argument:
     df -- dataframe to be saved
     """
-    df.to_csv("speeches_df.csv", index=False)
+    df.to_csv("speeches_df.csv")
 
 
 def get_dict_content(word):
@@ -200,7 +216,7 @@ def get_typo(words):
     return typo_words
 
 
-# Lemmatization corrections
+# Correcting lemmatization errors
 index_names = [
     ("батьки", "батьків"),
     ("українець", "українка"),
@@ -220,9 +236,19 @@ for main_index, *to_merge in index_names:
     df.loc[main_index] += df.loc[to_merge].sum()
     df = df.drop(to_merge, axis=0)
 
-df.loc["івано-франківськ"] = df.loc["івано"] + df.loc["франківськ"]
+# Correcticting dashed words
+# dashed_indexes = [
+#     ("івано-франківськ", "івано", "франківськ"),
+#     ("нью-йорк", "нью", "йорк"),
+# ]
 
+# for main_index, *to_merge in dashed_indexes:
+#     df.loc[main_index] = df.loc[to_merge].sum()
+#     df = df.drop(to_merge, axis=0)
 
+# df.loc["івано-франківськ"] = df.loc["івано"] + df.loc["франківськ"]
+
+# Correcting Lemmatization typos
 new_indexes = {
     "б’ватися": "вбивати",
     "братів": "брат",
