@@ -236,18 +236,6 @@ for main_index, *to_merge in index_names:
     df.loc[main_index] += df.loc[to_merge].sum()
     df = df.drop(to_merge, axis=0)
 
-# Correcticting dashed words
-# dashed_indexes = [
-#     ("івано-франківськ", "івано", "франківськ"),
-#     ("нью-йорк", "нью", "йорк"),
-# ]
-
-# for main_index, *to_merge in dashed_indexes:
-#     df.loc[main_index] = df.loc[to_merge].sum()
-#     df = df.drop(to_merge, axis=0)
-
-# df.loc["івано-франківськ"] = df.loc["івано"] + df.loc["франківськ"]
-
 # Correcting Lemmatization typos
 new_indexes = {
     "б’ватися": "вбивати",
@@ -275,6 +263,4 @@ new_indexes = {
 
 df = df.rename(new_indexes, axis="index")
 
-# all_words = df.index.tolist()
-# print(get_typo(all_words))
 save_df_to_csv(df)
