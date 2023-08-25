@@ -1,16 +1,14 @@
-import numpy as np
 import pandas as pd
-from collections import Counter
-import re
-import matplotlib.pyplot as plt
-from collections import defaultdict
-import pymorphy2
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
+import re
+import pymorphy2
 
-speech_regex = r"\b[А-ЯІЇЄҐа-яіїєґ\'\-’]+\b"
-stop_words_regex = r"\b\w+\b"
-years = [2020, 2021, 2022, 2023]
+import global_params
+
+years = global_params.YEARS
+speech_regex = global_params.SPEECH_REGEX
+stop_words_list = global_params.STOP_WORDS_LIST
 
 
 def get_speech_path(year):
@@ -38,7 +36,7 @@ def get_text(path):
     return text
 
 
-def get_words(text, regex):
+def get_words(text, regex=speech_regex):
     """
     Get the list of the words.
 
@@ -49,10 +47,6 @@ def get_words(text, regex):
     words = re.findall(regex, text.lower())
 
     return words
-
-
-stop_words_path = get_text("stopwords_ua.txt")
-stop_words_list = get_words(stop_words_path, stop_words_regex)
 
 
 def get_cleaned_words(words):
@@ -194,7 +188,7 @@ def save_df_to_csv(df):
 
 def get_dict_content(word):
     """
-    Get from the dictionary article of the world
+    Get from the dictionary article of the word
 
     Keyword argument:
     word -- a word which article to get, str.
@@ -216,51 +210,39 @@ def get_typo(words):
     return typo_words
 
 
-# Correcting lemmatization errors
-index_names = [
-    ("батьки", "батьків"),
-    ("українець", "українка"),
-    ("війна", "війнути"),
-    ("день", "дніти"),
-    ("друг", "друзі", "друзь"),
-    ("з’явитися", "з'явитися"),
-    ("здоровий", "здор"),
-    ("казати", "кажуть"),
-    ("рік", "річ", "рок"),
-    ("харків", "харко"),
-    ("пам'ятати", "пам’ятато"),
-    ("київ", "кий"),
-]
+# Uncomment only when necessary since it takes a lot of time to run this function
+# print("Words non existed in the ukrainian dictionary: ", get_typo())
 
-for main_index, *to_merge in index_names:
-    df.loc[main_index] += df.loc[to_merge].sum()
-    df = df.drop(to_merge, axis=0)
+
+lemma_errors_index_names = global_params.LEMMA_ERRORS
+
+# Correcting lemmatization errors
+def correct_lemma_errors(df=df, index_names=lemma_errors_index_names):
+    for main_index, *to_merge in index_names:
+        df.loc[main_index] += df.loc[to_merge].sum()
+        df = df.drop(to_merge, axis=0)
+
+    return
+
+
+lemma_typos_index_name = global_params.LEMMA_TYPOS
 
 # Correcting Lemmatization typos
-new_indexes = {
-    "б’ватися": "вбивати",
-    "братів": "брат",
-    "бтерти": "бтр",
-    "вбивець": "вбивця",
-    "гру": "гра",
-    "дідусів": "дідусь",
-    "зникний": "зникати",
-    "тюрьм": "тюрьма",
-    "лесь": "леся",
-    "шахедіва": "шахед",
-    "скорика": "скорик",
-    "черкас": "черкаси",
-    "тіна": "тінь",
-    "твіттера": "твіттер",
-    "русский": "русскій",
-    "марківий": "марків",
-    "мости": "міст",
-    "львів’ян": "львів’янин",
-    "обов’язка": "обов’язок",
-    "ковіда": "ковід",
-    "марути": "марув",
-}
+def correct_lemma_typos(df=df, new_indexes=lemma_typos_index_name):
+    df = df.rename(new_indexes, axis="index")
 
-df = df.rename(new_indexes, axis="index")
+    return
 
-save_df_to_csv(df)
+
+def fix_lemma(
+    df=df, index_names=lemma_errors_index_names, new_indexes=lemma_typos_index_name
+):
+    correct_lemma_errors(df, index_names)
+    correct_lemma_typos(df, new_indexes)
+
+    return
+
+
+fix_lemma()
+
+# save_df_to_csv(df)
