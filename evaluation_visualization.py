@@ -90,6 +90,25 @@ def visualize_parts_barchart(df, title):
         offset = width * multiplier
         rects = ax.bar(x + offset, counts, width, label=attribute)
         ax.bar_label(rects, padding=3)
+
+        if attribute == "Unique words":
+            total_words_counts = df.loc["All words"]  # Total words counts for each year
+            percentages = [
+                count / total * 100 for count, total in zip(counts, total_words_counts)
+            ]
+            for i, rect in enumerate(rects):
+                ax.annotate(
+                    f"{percentages[i]:.1f}%",
+                    xy=(rect.get_x() + rect.get_width() / 2, rect.get_height()),
+                    xytext=(
+                        0,
+                        -15,
+                    ),  # Adjust the y-coordinate here for vertical positioning
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                )
+
         multiplier += 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
