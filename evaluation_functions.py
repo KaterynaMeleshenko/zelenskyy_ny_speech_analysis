@@ -1,4 +1,4 @@
-# This file is to create additional DataFrame with intermediate numbers of words
+# This file is to create additional DataFrame with intermediate numbers of words for its further visualisation and analysis on trends
 import main
 
 years = main.years

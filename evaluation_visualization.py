@@ -5,7 +5,7 @@ import pandas as pd
 
 import evaluation_functions
 
-df_cleaned_initial = evaluation_functions.df_cleaned_initial
+df_cleaned_initial = evaluation_functions.df_evaluate
 
 
 def run_function(df, function, title, bar_1, bar_2):
@@ -143,3 +143,5 @@ run_function(
     "Unique words",
     "Filtered unique words",
 )
+
+#just a comment
