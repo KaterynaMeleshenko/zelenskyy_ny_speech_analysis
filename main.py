@@ -176,14 +176,14 @@ df = get_df(data)
 df.set_index("word", inplace=True)
 
 
-def save_df_to_csv(df):
+def save_df_to_csv(df, name):
     """
     Save dataframe to .csv file.
 
     Keyword argument:
     df -- dataframe to be saved
     """
-    df.to_csv("speeches_df.csv")
+    df.to_csv(name)
 
 
 def get_dict_content(word):
@@ -210,39 +210,42 @@ def get_typo(words):
     return typo_words
 
 
+words = df.index.tolist()
 # Uncomment only when necessary since it takes a lot of time to run this function
-# print("Words non existed in the ukrainian dictionary: ", get_typo())
+# print("Words non existed in the ukrainian dictionary: ", get_typo(words))
 
 
 lemma_errors_index_names = global_params.LEMMA_ERRORS
 
 # Correcting lemmatization errors
-def correct_lemma_errors(df=df, index_names=lemma_errors_index_names):
+def correct_lemma_errors(df, index_names):
     for main_index, *to_merge in index_names:
         df.loc[main_index] += df.loc[to_merge].sum()
         df = df.drop(to_merge, axis=0)
 
-    return
+    return df
 
 
 lemma_typos_index_name = global_params.LEMMA_TYPOS
 
 # Correcting Lemmatization typos
-def correct_lemma_typos(df=df, new_indexes=lemma_typos_index_name):
+def correct_lemma_typos(df, new_indexes):
     df = df.rename(new_indexes, axis="index")
 
-    return
+    return df
 
 
-def fix_lemma(
-    df=df, index_names=lemma_errors_index_names, new_indexes=lemma_typos_index_name
-):
-    correct_lemma_errors(df, index_names)
-    correct_lemma_typos(df, new_indexes)
+def fix_lemma(df, index_names, new_indexes):
+    df = correct_lemma_errors(df, index_names)
+    df = correct_lemma_typos(df, new_indexes)
 
-    return
+    return df
 
 
-fix_lemma()
+# save before lemma correction
+save_df_to_csv(df, "speeches_df.csv")
 
-# save_df_to_csv(df)
+df = fix_lemma(df, lemma_errors_index_names, lemma_typos_index_name)
+
+# safe after lemma correction
+save_df_to_csv(df, "tokens_df.csv")

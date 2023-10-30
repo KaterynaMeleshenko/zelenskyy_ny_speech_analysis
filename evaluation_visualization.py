@@ -143,5 +143,17 @@ run_function(
     "Unique words",
     "Filtered unique words",
 )
-
-#just a comment
+run_function(
+    df_cleaned_initial,
+    visualize_parts_barchart,
+    "Words proportion for each year",
+    "All words",
+    "Lemma words",
+)
+run_function(
+    df_cleaned_initial,
+    visualize_parts_barchart,
+    "Words proportion for each year",
+    "Filtered unique words",
+    "Lemma words",
+)

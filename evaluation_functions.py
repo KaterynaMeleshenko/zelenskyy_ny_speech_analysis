@@ -22,10 +22,12 @@ def get_all_words_nums(years):
             "All words",
             "Unique words",
             "Filtered unique words",
+            "Lemma words",
         ]
     }
     data_set_cleaned = set()
     data_set_filtered = set()
+    data_set_lemma = set()
 
     for year in years:
         speech_path = main.get_speech_path(year)
@@ -33,32 +35,37 @@ def get_all_words_nums(years):
         words_total = main.get_words(text, main.speech_regex)
         cleaned_words = main.get_cleaned_words(words_total)
         filtered_words = main.get_filtered_words(cleaned_words)
+        lemma_words = main.get_lemma_words(filtered_words)
         cleaned_words_unique = set(cleaned_words)
         filtered_words_unique = set(filtered_words)
+        lemma_words_unique = set(lemma_words)
         data_item = {
             str(year): [
                 len(cleaned_words),
                 len(cleaned_words_unique),
                 len(filtered_words_unique),
+                len(lemma_words_unique),
             ]
         }
         data.update(data_item)
         data_set_cleaned.update(cleaned_words_unique)
         data_set_filtered.update(filtered_words_unique)
+        data_set_lemma.update(lemma_words_unique)
 
     print(data)
-    return data, len(data_set_cleaned), len(data_set_filtered)
+    return data, len(data_set_cleaned), len(data_set_filtered), len(data_set_lemma)
 
 
 (
     data,
     data_set_cleaned,
     data_set_filtered,
+    data_set_lemma,
 ) = get_all_words_nums(years)
 
 df_evaluate = main.get_df(data)
 df_evaluate.set_index("Total_words", inplace=True)
-df_evaluate.loc["Lemma words"] = final_words_count
+df_evaluate.loc["Tokens"] = final_words_count
 
 all_words_num = df_evaluate.loc["All words"].sum()
 
@@ -68,7 +75,7 @@ print("Total number of cleaned initial words: ", all_words_num)
 print("Total number of unique cleaned words: ", data_set_cleaned)
 print("Total number of unique cleaned and filtered words: ", data_set_filtered)
 print(
-    "Total number of words after lemmatization and all fixes (final): ",
-    df_evaluate.loc["Lemma words"].sum(),
+    "Total number of unique words after lemmatization, cleaning and filtering: ",
+    data_set_lemma,
 )
-print("Number of final tokens: ", rows_num)
+print("Number of tokens: ", rows_num)
